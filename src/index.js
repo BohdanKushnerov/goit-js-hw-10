@@ -1,71 +1,4 @@
-import './css/styles.css';
-import API from './fetchCountries';
-import debounce from 'lodash.debounce'
-
-const DEBOUNCE_DELAY = 300;
-
-const inputRef = document.getElementById('search-box');
-const ulRef = document.querySelector('.country-list');
-const divRef = document.querySelector('.country-info');
-
-// // console.log(divRef)
-
-// console.log(API.fetchCountries('france')
-// .then(createMarkup))
-
-API.fetchCountries('usa')
-.then(createMarkup)
-.then(updateMarkup)
-
-function createMarkup ([{name, flags, capital, population, languages}]) {
-  // console.log(languages)
-  return `
-  <img src=${flags.svg} alt=${name} width = '50'>
-  <h2>${name.official}</h2>
-  <p>Capital: ${capital}</p>
-  <p>Population: ${population}</p>
-  <p>Languages: ${Object.values(languages)}</p>
-  `
-}
-
-function updateMarkup(markup) {
-  divRef.innerHTML = markup;
-}
-
-
-// MARKUP
-// флаг h2 -- img Sweden
-
-// p -- Capital:Stockholm
-// p -- Population: 9894888
-// p -- Languages: Swedish
-
-
-
-
-
-// inputEl.addEventListener('input', ...)
-
-// debounce(func, DEBOUNCE_DELAY)
-
-// Якщо користувач повністю очищає поле пошуку, то HTTP-запит не виконується, а розмітка списку країн або інформації про країну зникає.
-
-// Виконай санітизацію введеного рядка методом trim(), це вирішить проблему, коли в полі введення тільки пробіли, або вони є на початку і в кінці рядка.
-
-
-// API.fetchCountries('ukraine')
-
-
-
-
-
-
-
-
-
-
 // https://restcountries.com/v3.1/name/ukraine
-
 // https://restcountries.com/v2/name/ukraine?fields=name,capital,population,languages
 
 // https://restcountries.com/v2/all?fields=name,capital,currencies
@@ -76,47 +9,88 @@ function updateMarkup(markup) {
 // flags.svg - посилання на зображення прапора
 // languages - масив мов
 
+import './css/styles.css';
+import API from './fetchCountries';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import debounce from 'lodash.debounce';
 
+const DEBOUNCE_DELAY = 300;
 
+const inputRef = document.getElementById('search-box');
+const ulRef = document.querySelector('.country-list');
+const divRef = document.querySelector('.country-info');
 
+inputRef.addEventListener('input', debounce(onSearch, 300));
+// console.log(inputRef.value)
+function onSearch(e) {
+  // const counrty = e.currentTarget.value; //не робить
+  const counrty = e.target.value.trim();
+  // console.log(inputRef.value)
+  if(counrty === '') {
+    resetDivMarkup()
+  }
+  // console.log(e.target.value);
+  API.fetchCountries(counrty)
+  .then(result => {
+    if(result.length > 10) {
+      Notify.info("Too many matches found. Please enter a more specific name.");
+      return
+    } else if(result.length > 2 && result.length < 10) {    
+      const markup = result.reduce(
+        (acc, value) => createUl(value) + acc,
+          ""
+          );
 
-// https://restcountries.com/v3.1/name/{name}
-// https://restcountries.com/v2/name/{name}
+      ulRef.innerHTML = markup;
+      resetDivMarkup()
+    } else {
+      createMarkupDiv(result);
+      resetUlMarkup()
+    }
+  })
+  // .catch(
+  //   Notify.warning("Oops, there is no country with that name");
+  // )
+  // .finally()
+  }
 
-//-------------------------------------------------
-// const options = {
-//   headers: {
-//     "X-Api-Key": "dd82ff3604224bf1b224da3ef75c9135",
-//   },
-// };
+function createUl({name, flags}) {
+  return `
+  <li>
+    <img src=${flags.svg} alt=${name} width = '50'>
+    <h2>${name.official}</h2>
+  </li>
+  `
+}
 
-// function fetchData(query) {
-//   const URL = `https://newsapi.org/v2/everything?q=cat`;
+function createMarkupDiv ([{name, flags, capital, population, languages}]) {
+  const markup = `
+  <img src=${flags.svg} alt=${name} width = '50'>
+  <h2>${name.official}</h2>
+  <p>Capital: ${capital}</p>
+  <p>Population: ${population}</p>
+  <p>Languages: ${Object.values(languages)}</p>
+  `
 
-//   return fetch(URL, options).then((response) => response.json());
+  divRef.innerHTML = markup;
+}
+
+function createMarkupUl () {
+  
+}
+
+function resetDivMarkup() {
+  divRef.innerHTML = '';
+}
+
+function resetUlMarkup() {
+  ulRef.innerHTML = '';
+}
+
+// function updateMarkup(markup) {
+//   divRef.innerHTML = markup;
 // }
 
-// fetchData('cat')
-//     .then(({ articles }) => {
-//       if (articles.length === 0) throw new Error("No data");
-//       console.log(articles)
-//       return articles.reduce(
-//         (markup, article) => createMarkup(article) + markup,
-//         ""
-//       );
-//     })
-//     .then(createMarkup)
-//     // .then(console.log(e))
-
-//     function createMarkup({ author, title, description, url, urlToImage }) {
-//       console.log(author)
-//       return `
-//       <div class="article-card">
-//         <img src=${urlToImage} class="article-img" />
-//         <h2 class="article-title">${title}</h2>
-//         <h3 class="article-author">${author || "anonymous"}</h3>
-//         <p  class="article-description">${description}</p>
-//         <a href=${url} class="article-link" target="_blank">Read more</a>
-//       </div>
-//       `;
-//     }
+// function updateUl(markup) {
+//   ulRef.innerHTML = markup;
+// }
