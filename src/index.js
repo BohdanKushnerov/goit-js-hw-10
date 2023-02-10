@@ -18,17 +18,10 @@ function onSearch(e) {
     resetListMarkup();
     return;
   }
-  //   {
-  //     "status": 404,
-  //     "message": "Not Found"
-  // }
   API.fetchCountries(counrty)
     .then(result => {
       if (result.length > 10) {
-        Notify.info(
-          'Too many matches found. Please enter a more specific name.'
-        );
-        return;
+        infoMessage();
       } else if (result.length > 2 && result.length < 10) {
         createListMarkup(result);
         resetContainerMarkup();
@@ -37,11 +30,7 @@ function onSearch(e) {
         resetListMarkup();
       }
     })
-    .catch(error => {
-      console.log(error);
-
-      Notify.failure('Oops, there is no country with that name');
-    });
+    .catch(catchError);
 }
 
 function createItem({ name: {official}, flags: {svg} }) {
@@ -86,3 +75,16 @@ function resetContainerMarkup() {
 function resetListMarkup() {
   ulRef.innerHTML = '';
 }
+
+function catchError() {
+  Notify.failure('Oops, there is no country with that name');
+}
+
+function infoMessage() {
+  Notify.info('Too many matches found. Please enter a more specific name.');
+}
+
+  //   {
+  //     "status": 404,
+  //     "message": "Not Found"
+  // }
