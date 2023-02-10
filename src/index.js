@@ -44,19 +44,19 @@ function onSearch(e) {
     });
 }
 
-function createItem({ name, flags }) {
+function createItem({ name: {official}, flags: {svg} }) {
   return `
   <li class="countries-item">
-    <img class="countries-icon"src=${flags.svg} alt=${name}>
-    <h2 class="countries-title">${name.official}</h2>
+    <img class="countries-icon"src=${svg} alt=${official}>
+    <h2 class="countries-title">${official}</h2>
   </li>
   `;
 }
 
-function createContainerMarkup([{ name, flags, capital, population, languages }]) {
+function createContainerMarkup([{ name: {official}, flags: {svg}, capital, population, languages }]) {
   const markup = `
-  <img class="country-icon" src=${flags.svg} alt=${name} width = '50'>
-  <h2 class="country-title">${name.official}</h2>
+  <img class="country-icon" src=${svg} alt=${official}>
+  <h2 class="country-title">${official}</h2>
   <p class="country-capital">Capital: ${capital}</p>
   <p class="country-population">Population: ${population}</p>
   <p class="country-languages">Languages: ${Object.values(languages)}</p>
